@@ -3,6 +3,7 @@ name = "parsertools"
 version = "0.0.0"
 edition = "2021"
 description = "A parser combinator library"
+license = "MIT"
 
 [dependencies]
 non-empty-collections = {version = "0.1.9", default-features = false}
