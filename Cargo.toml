@@ -1,0 +1,10 @@
+[package]
+name = "parsertools"
+version = "0.0.0"
+edition = "2021"
+description = "A parser combinator library"
+
+[dependencies]
+non-empty-collections = {version = "0.1.9", default-features = false}
+thiserror = "2.0.3"
+tracing = "0.1.41"
