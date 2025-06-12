@@ -2,7 +2,7 @@ use non_empty_collections::NonEmptyIndexSet;
 
 use crate::{LeftRecursionCheck, Parser};
 
-use super::{AstBounds, ParseOutput, ParserInner, ParsingError, PartialParseResult, TokenBounds};
+use super::{AstBounds, ParseInnerOutput, ParserInner, ParseError, PartialParseResult, TokenBounds};
 
 use std::collections::HashSet;
 
@@ -17,12 +17,12 @@ impl<Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> ParserInner
     type Token = Token;
     type Ast = (Ast1, Ast2);
 
-    fn parse<'a>(&self, tokens: &'a [Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_inner<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         // Parse the first part, then with each result, parse the second part
         // if the first part fails, return the error
         // if every result from the first part causes the second part to fail, return the first error
         let p1_res = self.p1.parse(tokens)?;
-        let mut error: Option<ParsingError<Self::Token>> = None;
+        let mut error: Option<ParseError<Self::Token>> = None;
         let mut results = HashSet::new();
         for r1 in p1_res {
             match self.p2.parse(r1.remaining_tokens) {

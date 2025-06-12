@@ -2,7 +2,7 @@ use non_empty_collections::NonEmptyIndexSet;
 
 use crate::{LeftRecursionCheck, Parser};
 
-use super::{AstBounds, ParseOutput, ParserInner, PartialParseResult, TokenBounds};
+use super::{AstBounds, ParseInnerOutput, ParserInner, PartialParseResult, TokenBounds};
 
 #[derive(Clone)]
 pub(super) struct MapParser<
@@ -26,7 +26,7 @@ impl<
     type Token = Token;
     type Ast = OutAst;
 
-    fn parse<'a>(&self, tokens: &'a [Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_inner<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         Ok(
             NonEmptyIndexSet::from_iterator(self.parser.parse(tokens)?.into_iter().map(
                 |PartialParseResult {

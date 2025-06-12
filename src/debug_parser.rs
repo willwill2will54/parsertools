@@ -2,7 +2,7 @@ use tracing::{span, trace, Level};
 
 use crate::{AstBounds, LeftRecursionCheck, Parser, TokenBounds};
 
-use super::{ParseOutput, ParserInner};
+use super::{ParseInnerOutput, ParserInner};
 
 pub(crate) struct DebugParser<'a, T: TokenBounds, A: AstBounds> {
     pub(crate) inner: Parser<'a, T, A>,
@@ -17,7 +17,7 @@ where
     type Token = T;
     type Ast = A;
 
-    fn parse<'a>(&self, tokens: &'a [Self::Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_inner<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         let span = span!(
             Level::INFO,
             "parsing",

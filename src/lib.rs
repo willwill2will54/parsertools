@@ -13,7 +13,7 @@ pub trait AstBounds: PartialEq + Hash + Clone + fmt::Debug {}
 impl<T: PartialEq + Hash + Clone + fmt::Debug> AstBounds for T {}
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
-pub enum ParsingError<T: TokenBounds> {
+pub enum ParseError<T: TokenBounds> {
     #[error("Grammar permits multiple interpretations: {0:?}")]
     AmbiguousGrammar(Vec<String>),
     #[error("Unexpected token")]
@@ -49,10 +49,10 @@ impl<Ast: AstBounds, Token: TokenBounds> Hash for PartialParseResult<'_, Ast, To
     }
 }
 
-pub type ParseOutput<'a, Ast, Token> =
-    Result<NonEmptyIndexSet<PartialParseResult<'a, Ast, Token>>, ParsingError<Token>>;
+pub type ParseInnerOutput<'a, Ast, Token> =
+    Result<NonEmptyIndexSet<PartialParseResult<'a, Ast, Token>>, ParseError<Token>>;
 
-pub type ParseAllOutput<'a, Ast, Token> = Result<Ast, ParsingError<Token>>;
+pub type ParseOutput<'a, Ast, Token> = Result<Ast, ParseError<Token>>;
 
 pub enum LeftRecursionCheck {
     Ok,
@@ -81,20 +81,13 @@ trait ParserInner: Sync + Send {
     type Token: TokenBounds;
     type Ast: AstBounds;
 
-    fn parse<'a>(&self, tokens: &'a [Self::Token]) -> ParseOutput<'a, Self::Ast, Self::Token>;
+    fn parse_inner<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token>;
 
-    fn parse_all<'a>(
+    fn parse<'a>(
         &self,
         tokens: &'a [Self::Token],
-    ) -> ParseAllOutput<'a, Self::Ast, Self::Token> {
-        self.default_parser_all(tokens)
-    }
-
-    fn default_parser_all<'a>(
-        &self,
-        tokens: &'a [Self::Token],
-    ) -> ParseAllOutput<'a, Self::Ast, Self::Token> {
-        let parsed = self.parse(tokens)?;
+    ) -> ParseOutput<'a, Self::Ast, Self::Token> {
+        let parsed = self.parse_inner(tokens)?;
         let filtered: Vec<_> = parsed
             .iter()
             .filter(|p| p.remaining_tokens.is_empty())
@@ -107,14 +100,26 @@ trait ParserInner: Sync + Send {
                 .unwrap()
                 .remaining_tokens
                 .to_vec();
-            Err(ParsingError::UnhandledTokens(remaining_tokens))
+            Err(ParseError::UnhandledTokens(remaining_tokens))
         } else if filtered.len() == 1 {
             Ok(filtered.first().unwrap().clone())
         } else {
-            Err(ParsingError::AmbiguousGrammar(
+            Err(ParseError::AmbiguousGrammar(
                 filtered.into_iter().map(|x| format!("{x:?}")).collect(),
             ))
         }
+    }
+
+    fn parse_all<'a>(
+        &self,
+        tokens: &'a [Self::Token],
+    ) -> Vec<Self::Ast> {
+        let Ok(parsed) = self.parse_inner(tokens) else { return Vec::new() };
+        parsed
+            .iter()
+            .filter(|p| p.remaining_tokens.is_empty())
+            .map(|p| p.ast.clone())
+            .collect()
     }
 
     fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck;
@@ -132,12 +137,12 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         }
     }
 
-    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
-        self.inner.parse(tokens)
+    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
+        self.inner.parse_inner(tokens)
     }
 
-    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> ParseAllOutput<'b, A, T> {
-        self.inner.parse_all(tokens)
+    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
+        self.inner.parse(tokens)
     }
 
     pub fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {

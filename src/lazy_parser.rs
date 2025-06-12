@@ -1,4 +1,4 @@
-use crate::{AstBounds, LeftRecursionCheck, ParseOutput, Parser, ParserInner, TokenBounds};
+use crate::{AstBounds, LeftRecursionCheck, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 pub(super) struct LazyParser<'a, T: TokenBounds, A: AstBounds, F: Send + Sync + Fn() -> Parser<'a,T,A>> {
     pub(super) inner: F,
@@ -10,7 +10,7 @@ impl<'a, T: TokenBounds, A: AstBounds, F: Send + Sync + Fn() -> Parser<'a,T,A>> 
     type Token = T;
     type Ast = A;
 
-    fn parse<'b>(&self, tokens: &'b [Self::Token]) -> ParseOutput<'b, Self::Ast, Self::Token> {
+    fn parse_inner<'b>(&self, tokens: &'b [Self::Token]) -> ParseInnerOutput<'b, Self::Ast, Self::Token> {
         (self.inner)().parse(tokens)
     }
 
