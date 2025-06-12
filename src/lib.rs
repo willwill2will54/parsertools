@@ -145,6 +145,10 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         self.inner.parse(tokens)
     }
 
+    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> Vec<A> {
+        self.inner.parse_all(tokens)
+    }
+
     pub fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {
         self.inner.check_left_recursion(depth)
     }
