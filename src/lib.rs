@@ -1,4 +1,5 @@
 use non_empty_collections::NonEmptyIndexSet;
+use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -8,9 +9,9 @@ pub trait TokenBounds: Eq + Hash + fmt::Debug + Clone + Sync + Send {}
 
 impl<T: Eq + Hash + fmt::Debug + Clone + Sync + Send> TokenBounds for T {}
 
-pub trait AstBounds: PartialEq + Hash + Clone + fmt::Debug {}
+pub trait AstBounds: PartialEq + Eq + Hash + Clone + fmt::Debug {}
 
-impl<T: PartialEq + Hash + Clone + fmt::Debug> AstBounds for T {}
+impl<T: PartialEq + Eq + Hash + Clone + fmt::Debug> AstBounds for T {}
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum ParseError<T: TokenBounds> {
@@ -113,8 +114,8 @@ trait ParserInner: Sync + Send {
     fn parse_all<'a>(
         &self,
         tokens: &'a [Self::Token],
-    ) -> Vec<Self::Ast> {
-        let Ok(parsed) = self.parse_inner(tokens) else { return Vec::new() };
+    ) -> HashSet<Self::Ast> {
+        let Ok(parsed) = self.parse_inner(tokens) else { return HashSet::new() };
         parsed
             .iter()
             .filter(|p| p.remaining_tokens.is_empty())
@@ -145,7 +146,7 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         self.inner.parse(tokens)
     }
 
-    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> Vec<A> {
+    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> HashSet<A> {
         self.inner.parse_all(tokens)
     }
 
