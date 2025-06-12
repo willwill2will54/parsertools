@@ -12,7 +12,7 @@ pub trait AstBounds: PartialEq + Hash + Clone + fmt::Debug {}
 
 impl<T: PartialEq + Hash + Clone + fmt::Debug> AstBounds for T {}
 
-#[derive(Error, Debug, Clone)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum ParsingError<T: TokenBounds> {
     #[error("Grammar permits multiple interpretations: {0:?}")]
     AmbiguousGrammar(Vec<String>),
@@ -194,8 +194,8 @@ mod lazy_parser;
 
 mod debug_parser;
 
-pub fn lazy<'a, T: TokenBounds + 'a, A: AstBounds + 'a>(
-    f: fn() -> Parser<'a, T, A>,
+pub fn lazy<'a, T: TokenBounds + 'a, A: AstBounds + 'a, F: 'a + Send + Sync + Fn() -> Parser<'a,T,A>>(
+    f: F,
 ) -> Parser<'a, T, A> {
     Parser::new(lazy_parser::lazy(f))
 }
