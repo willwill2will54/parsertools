@@ -11,7 +11,7 @@ impl<'a, T: TokenBounds, A: AstBounds, F: Send + Sync + Fn() -> Parser<'a,T,A>> 
     type Ast = A;
 
     fn parse_inner<'b>(&self, tokens: &'b [Self::Token]) -> ParseInnerOutput<'b, Self::Ast, Self::Token> {
-        (self.inner)().parse(tokens)
+        (self.inner)().parse_inner(tokens)
     }
 
     fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {

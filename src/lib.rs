@@ -137,11 +137,11 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         }
     }
 
-    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
+    pub fn parse_inner<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
         self.inner.parse_inner(tokens)
     }
 
-    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
+    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
         self.inner.parse(tokens)
     }
 

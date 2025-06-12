@@ -25,7 +25,7 @@ where
             label = self.msg.as_deref()
         );
         let _enter = span.enter();
-        let result = self.inner.parse(tokens);
+        let result = self.inner.parse_inner(tokens);
         match &result {
             Ok(results) => {
                 trace!("Parse results: {:?}", results);
