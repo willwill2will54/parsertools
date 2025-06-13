@@ -169,6 +169,13 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         Parser::new(map_parser::map(self, f))
     }
 
+    pub fn filter<F: Fn(&A) -> bool + 'a + Sync + Send>(
+        self,
+        f: F, e: ParseError<T>
+    ) -> Parser<'a, T, A> {
+        Parser::new(filter_parser::filter(self, f, e))
+    }
+
     pub fn debug_msg(self, msg: impl ToString) -> Self
     where
         Self: Sized,
@@ -195,6 +202,8 @@ mod alt_parser;
 mod seq_parser;
 
 mod map_parser;
+
+mod filter_parser;
 
 mod single_token_parser;
 
