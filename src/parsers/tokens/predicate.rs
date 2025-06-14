@@ -1,8 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::LeftRecursionCheck;
-
-use super::{AstBounds, ParseInnerOutput, ParserInner, ParseError, PartialParseResult, TokenBounds};
+use crate::parsers::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 type TokenPredicate<'a, T, A> = Box<dyn Fn(&T) -> Option<A> + Sync + Send + 'a>;
 
@@ -35,10 +33,8 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for TokenPredicateParser<'_
     }
 }
 
-pub fn pred<'a, T: TokenBounds, Ast: AstBounds>(
+pub fn pred<'a, T: 'a + TokenBounds, Ast: 'a + AstBounds>(
     predicate: impl Fn(&T) -> Option<Ast> + Sync + Send + 'a,
-) -> TokenPredicateParser<'a, T, Ast> {
-    TokenPredicateParser {
-        predicate: Box::new(predicate),
-    }
+) -> Parser<'a, T, Ast> {
+    Parser::new(TokenPredicateParser { predicate: Box::new(predicate) })
 }

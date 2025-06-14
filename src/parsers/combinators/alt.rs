@@ -1,9 +1,7 @@
-use crate::{LeftRecursionCheck, Parser};
-
-use super::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds};
+use crate::parsers::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
 
 #[derive(Clone)]
-pub(super) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {
+pub(crate) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {
     pub(super) p1: Parser<'a, Token, Ast>,
     pub(super) p2: Parser<'a, Token, Ast>,
 }
@@ -46,7 +44,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
     }
 }
 
-pub(super) fn alt<'a, Token: TokenBounds, Ast: AstBounds>(
+pub (crate) fn alt<'a, Token: TokenBounds, Ast: AstBounds>(
     p1: Parser<'a, Token, Ast>,
     p2: Parser<'a, Token, Ast>,
 ) -> AltParser<'a, Token, Ast> {

@@ -1,12 +1,10 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{LeftRecursionCheck, Parser};
-
-use super::{AstBounds, ParseInnerOutput, ParserInner, ParseError, PartialParseResult, TokenBounds};
+use crate::parsers::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 use std::collections::HashSet;
 
-pub struct SeqParser<'a, Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> {
+pub (crate) struct SeqParser<'a, Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> {
     p1: Parser<'a, Token, Ast1>,
     p2: Parser<'a, Token, Ast2>,
 }
@@ -50,7 +48,7 @@ impl<Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> ParserInner
     }
 }
 
-pub fn seq<'a, Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds>(
+pub (crate) fn seq<'a, Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds>(
     p1: Parser<'a, Token, Ast1>,
     p2: Parser<'a, Token, Ast2>,
 ) -> SeqParser<'a, Token, Ast1, Ast2> {

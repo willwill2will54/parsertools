@@ -1,11 +1,9 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{LeftRecursionCheck, Parser};
-
-use super::{AstBounds, ParseInnerOutput, ParserInner, PartialParseResult, TokenBounds};
+use crate::parsers::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 #[derive(Clone)]
-pub(super) struct MapParser<
+pub(crate) struct MapParser<
     'a,
     Token: TokenBounds + 'a,
     InAst: AstBounds + 'a,
@@ -49,7 +47,7 @@ impl<
     }
 }
 
-pub(super) fn map<
+pub(crate) fn map<
     Token: TokenBounds,
     InAst: AstBounds,
     OutAst: AstBounds,
