@@ -9,12 +9,12 @@ use crate::parsers::{helpers::lazy, tokens::pred, AstBounds, Parser, TokenBounds
 pub fn alternating<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,A>, right: Parser<'a,T,A>) -> Parser<'a, T,Vec<A>> {
     alternating_vecs(vecify(left), vecify(right))
 }
-pub fn alternating_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,Vec<A>>, right: Parser<'a,T,Vec<A>>) -> Parser<'a, T,Vec<A>> {
-    let a = left.clone();
-    let b = right.clone();
-    let a_bax = concat_vecs(right.clone(),alternating_inner(left.clone(),right.clone()));
-    let b_abx = concat_vecs(left.clone(),alternating_inner(right.clone(),left.clone()));
-    disjunction([a,b,a_bax,b_abx])
+pub fn alternating_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (a: Parser<'a,T,Vec<A>>, b: Parser<'a,T,Vec<A>>) -> Parser<'a, T,Vec<A>> {
+    let abx = alternating_inner(a.clone(),b.clone());
+    let bax = alternating_inner(b.clone(),a.clone());
+    let a_bax = concat_vecs(a.clone(),bax.clone());
+    let b_abx = concat_vecs(b.clone(),abx.clone());
+    disjunction([a,b,abx,bax,a_bax,b_abx])
 }
 fn alternating_inner<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,Vec<A>>, right: Parser<'a,T,Vec<A>>) -> Parser<'a, T,Vec<A>> {
     series_vecs(concat_vecs(left,right))
@@ -62,7 +62,7 @@ pub fn concat<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,A>,
     concat_vecs(vecify(left),vecify(right))
 }
 fn concat_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,Vec<A>>, right: Parser<'a,T,Vec<A>>) -> Parser<'a, T,Vec<A>> {
-    left.clone().then(right).map(|(l,r)| [l,r].concat())
+    left.then(right).map(|(l,r)| [l,r].concat())
 }
 
 pub fn vecify<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (parser: Parser<'a, T,A>) -> Parser<'a, T,Vec<A>> {

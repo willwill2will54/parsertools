@@ -13,13 +13,10 @@ pub mod combinators;
 pub mod transformers;
 pub mod helpers;
 
-
 pub trait TokenBounds: Eq + Hash + fmt::Debug + Clone + Sync + Send {}
-
 impl<T: Eq + Hash + fmt::Debug + Clone + Sync + Send> TokenBounds for T {}
 
 pub trait AstBounds: PartialEq + Eq + Hash + Clone + fmt::Debug {}
-
 impl<T: PartialEq + Eq + Hash + Clone + fmt::Debug> AstBounds for T {}
 
 #[derive(Clone)]
