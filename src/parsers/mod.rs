@@ -58,34 +58,24 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         Parser::new(combinators::seq(self, p2))
     }
 
-    pub fn map<F: Fn(A) -> Ast + 'a + Sync + Send, Ast: AstBounds + 'a>(
-        self,
-        f: F,
-    ) -> Parser<'a, T, Ast> {
+    pub fn map<F: Fn(A) -> Ast + 'a + Sync + Send, Ast: AstBounds + 'a>
+        (self,f: F) -> Parser<'a, T, Ast> {
         Parser::new(transformers::map(self, f))
     }
 
-    pub fn filter<F: Fn(&A) -> bool + 'a + Sync + Send>(
-        self,
-        f: F, e: ParseError<T>
-    ) -> Parser<'a, T, A> {
-        Parser::new(transformers::filter(self, f, e))
+    pub fn filter<F: Fn(&A) -> bool + 'a + Sync + Send>
+        (self, f: F, e: ParseError<T>) -> Parser<'a, T, A> {
+        transformers::filter(self, f, e)
     }
 
-    pub fn debug_msg(self, msg: impl ToString) -> Self
-    where
-        Self: Sized,
-    {
+    pub fn debug_msg(self, msg: impl ToString) -> Self where Self: Sized, {
         Parser::new(helpers::DebugParser {
             inner: self,
             msg: Some(msg.to_string()),
         })
     }
 
-    pub fn debug(self) -> Self
-    where
-        Self: Sized,
-    {
+    pub fn debug(self) -> Self where Self: Sized, {
         Parser::new(helpers::DebugParser {
             inner: self,
             msg: None,

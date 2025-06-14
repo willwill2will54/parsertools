@@ -3,7 +3,7 @@ use non_empty_collections::NonEmptyIndexSet;
 use crate::parsers::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 #[derive(Clone)]
-pub(crate) struct MapParser<
+pub(crate) struct FilterParser<
     'a,
     Token: TokenBounds + 'a,
     Ast: AstBounds + 'a,
@@ -18,7 +18,7 @@ impl<
         Token: TokenBounds,
         Ast: AstBounds,
         F: Fn(&Ast) -> bool + Sync + Send,
-    > ParserInner for MapParser<'_, Token, Ast, F>
+    > ParserInner for FilterParser<'_, Token, Ast, F>
 {
     type Token = Token;
     type Ast = Ast;
@@ -44,14 +44,14 @@ impl<
     }
 }
 
-pub(crate) fn filter<
-    Token: TokenBounds,
-    Ast: AstBounds,
-    F: Fn(&Ast) -> bool + Sync + Send,
+pub(crate) fn filter<'a,
+    Token: 'a + TokenBounds,
+    Ast: 'a + AstBounds,
+    F: 'a + Fn(&Ast) -> bool + Sync + Send,
 >(
-    parser: Parser<'_, Token, Ast>,
+    parser: Parser<'a, Token, Ast>,
     function: F,
     error: ParseError<Token>
-) -> MapParser<'_, Token, Ast, F> {
-    MapParser { parser, function, error }
+) -> Parser<'a, Token, Ast> {
+    Parser::new(FilterParser { parser, function, error })
 }
