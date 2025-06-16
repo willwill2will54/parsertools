@@ -1,8 +1,10 @@
 mod filter;
 mod map;
+mod split;
 
 pub(crate) use filter::filter;
 pub(crate) use map::map;
+pub(crate) use split::split_map;
 
 use crate::parsers::{helpers::lazy, tokens::pred, AstBounds, Parser, TokenBounds};
 

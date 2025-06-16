@@ -67,6 +67,11 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         transformers::filter(self, f, e)
     }
 
+    pub fn split_map<It: 'a + IntoIterator<Item=Ast>, F: Fn(A) -> It + 'a + Sync + Send, Ast: AstBounds + 'a>
+        (self,f: F) -> Parser<'a, T, Ast> {
+        Parser::new(transformers::split_map(self, f))
+    }
+
     pub fn debug_msg(self, msg: impl ToString) -> Self where Self: Sized, {
         Parser::new(helpers::DebugParser {
             inner: self,
