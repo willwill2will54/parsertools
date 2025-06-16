@@ -35,12 +35,14 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         self.inner.parse_inner(tokens)
     }
 
-    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
-        self.inner.parse(tokens)
+    pub fn parse<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> ParseOutput<'b, A, T> {
+        let tokens: Vec<T> = tokens.into_iter().collect();
+        self.inner.parse(tokens.as_slice())
     }
 
-    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> HashSet<A> {
-        self.inner.parse_all(tokens)
+    pub fn parse_all<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> HashSet<A> {
+        let tokens: Vec<T> = tokens.into_iter().collect();
+        self.inner.parse_all(tokens.as_slice())
     }
 
     pub fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {
