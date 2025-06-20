@@ -35,7 +35,7 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         self.inner.parse_inner(tokens)
     }
 
-    pub fn parse<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> ParseOutput<'b, A, T> {
+    pub fn parse<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> ParseOutput<A, T> {
         let tokens: Vec<T> = tokens.into_iter().collect();
         self.inner.parse(tokens.as_slice())
     }

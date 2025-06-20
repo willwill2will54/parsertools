@@ -13,7 +13,7 @@ pub (super) trait ParserInner: Sync + Send {
     fn parse<'a>(
         &self,
         tokens: &'a [Self::Token],
-    ) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    ) -> ParseOutput<Self::Ast, Self::Token> {
         let parsed = self.parse_inner(tokens)?;
         let filtered: Vec<_> = parsed
             .iter()

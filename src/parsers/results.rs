@@ -39,7 +39,7 @@ impl<Ast: AstBounds, Token: TokenBounds> Hash for PartialParseResult<'_, Ast, To
     }
 }
 
-pub type ParseOutput<'a, Ast, Token> = Result<Ast, ParseError<Token>>;
+pub type ParseOutput<Ast, Token> = Result<Ast, ParseError<Token>>;
 
 pub enum LeftRecursionCheck {
     Ok,
