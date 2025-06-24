@@ -1,8 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::LeftRecursionCheck;
-
-use super::{ParseOutput, ParserInner, ParsingError, PartialParseResult, TokenBounds};
+use crate::{results::PartialParseResult, LeftRecursionCheck, ParseError, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 pub(crate) struct SingleTokenParser<T: TokenBounds> {
     pub(crate) token: T,
@@ -10,23 +8,23 @@ pub(crate) struct SingleTokenParser<T: TokenBounds> {
 
 impl<T: TokenBounds> ParserInner for SingleTokenParser<T> {
     type Token = T;
-    type Ast = ();
+    type Ast = T;
 
-    fn parse<'a>(&self, tokens: &'a [T]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [T]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         match tokens.first() {
             Some(t) if t == &self.token => {
                 let new_tokens = &tokens[1..];
 
                 Ok(NonEmptyIndexSet::new(PartialParseResult {
-                    ast: (),
+                    ast: t.clone(),
                     remaining_tokens: new_tokens,
                 }))
             }
-            Some(t) => Err(ParsingError::UnexpectedTokenProperKnown {
+            Some(t) => Err(ParseError::UnexpectedTokenProperKnown {
                 expected: self.token.clone(),
                 found: t.clone(),
             }),
-            None => Err(ParsingError::UnexpectedEndOfInputProperKnown {
+            None => Err(ParseError::UnexpectedEndOfInputProperKnown {
                 expected: self.token.clone(),
             }),
         }
@@ -37,6 +35,6 @@ impl<T: TokenBounds> ParserInner for SingleTokenParser<T> {
     }
 }
 
-pub(crate) fn tok<T: TokenBounds>(token: T) -> SingleTokenParser<T> {
-    SingleTokenParser { token }
+pub fn tok<'a,T: TokenBounds + 'a>(token: T) -> Parser<'a,T,T> {
+    Parser::new(SingleTokenParser { token })
 }

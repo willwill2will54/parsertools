@@ -1,8 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::LeftRecursionCheck;
-
-use super::{AstBounds, ParseOutput, ParserInner, ParsingError, PartialParseResult, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 type TokenPredicate<'a, T, A> = Box<dyn Fn(&T) -> Option<A> + Sync + Send + 'a>;
 
@@ -14,7 +12,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for TokenPredicateParser<'_
     type Token = Token;
     type Ast = Ast;
 
-    fn parse<'a>(&self, tokens: &'a [Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         if let Some(tok) = tokens.first() {
             if let Some(ast) = (self.predicate)(tok) {
                 let remaining_tokens = &tokens[1..];
@@ -23,10 +21,10 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for TokenPredicateParser<'_
                     remaining_tokens,
                 }))
             } else {
-                Err(ParsingError::UnexpectedTokenProperUnknown)
+                Err(ParseError::UnexpectedTokenProperUnknown)
             }
         } else {
-            Err(ParsingError::UnexpectedEndOfInputProperUnknown)
+            Err(ParseError::UnexpectedEndOfInputProperUnknown)
         }
     }
 
@@ -35,10 +33,8 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for TokenPredicateParser<'_
     }
 }
 
-pub fn pred<'a, T: TokenBounds, Ast: AstBounds>(
+pub fn pred<'a, T: 'a + TokenBounds, Ast: 'a + AstBounds>(
     predicate: impl Fn(&T) -> Option<Ast> + Sync + Send + 'a,
-) -> TokenPredicateParser<'a, T, Ast> {
-    TokenPredicateParser {
-        predicate: Box::new(predicate),
-    }
+) -> Parser<'a, T, Ast> {
+    Parser::new(TokenPredicateParser { predicate: Box::new(predicate) })
 }

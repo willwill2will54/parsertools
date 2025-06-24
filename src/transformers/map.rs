@@ -1,11 +1,9 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{LeftRecursionCheck, Parser};
-
-use super::{AstBounds, ParseOutput, ParserInner, PartialParseResult, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 #[derive(Clone)]
-pub(super) struct MapParser<
+pub(crate) struct MapParser<
     'a,
     Token: TokenBounds + 'a,
     InAst: AstBounds + 'a,
@@ -26,9 +24,9 @@ impl<
     type Token = Token;
     type Ast = OutAst;
 
-    fn parse<'a>(&self, tokens: &'a [Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         Ok(
-            NonEmptyIndexSet::from_iterator(self.parser.parse(tokens)?.into_iter().map(
+            NonEmptyIndexSet::from_iterator(self.parser.parse_front(tokens)?.into_iter().map(
                 |PartialParseResult {
                      ast,
                      remaining_tokens,
@@ -49,7 +47,7 @@ impl<
     }
 }
 
-pub(super) fn map<
+pub(crate) fn map<
     Token: TokenBounds,
     InAst: AstBounds,
     OutAst: AstBounds,

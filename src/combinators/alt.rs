@@ -1,9 +1,7 @@
-use crate::{LeftRecursionCheck, Parser};
-
-use super::{AstBounds, ParseOutput, ParserInner, TokenBounds};
+use crate::{AstBounds, ParseFrontOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
 
 #[derive(Clone)]
-pub(super) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {
+pub(crate) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {
     pub(super) p1: Parser<'a, Token, Ast>,
     pub(super) p2: Parser<'a, Token, Ast>,
 }
@@ -12,14 +10,14 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
     type Token = Token;
     type Ast = Ast;
 
-    fn parse<'a>(&self, tokens: &'a [Token]) -> ParseOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         // p1 success and p2 success: return both
         // p1 success and p2 fail: return p1
         // p1 fail and p2 success: return p2
         // p1 fail and p2 fail: return p1
         let tokens_remaining = tokens.len();
-        match self.p1.parse(tokens) {
-            Ok(mut p1_res) => match self.p2.parse(tokens) {
+        match self.p1.parse_front(tokens) {
+            Ok(mut p1_res) => match self.p2.parse_front(tokens) {
                 Ok(p2_res) => {
                     p1_res.extend(p2_res);
                     let max_len = p1_res
@@ -32,7 +30,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
                 }
                 Err(_) => Ok(p1_res),
             },
-            Err(err) => self.p2.parse(tokens).map_err(|_| err),
+            Err(err) => self.p2.parse_front(tokens).map_err(|_| err),
         }
     }
 
@@ -46,7 +44,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
     }
 }
 
-pub(super) fn alt<'a, Token: TokenBounds, Ast: AstBounds>(
+pub (crate) fn alt<'a, Token: TokenBounds, Ast: AstBounds>(
     p1: Parser<'a, Token, Ast>,
     p2: Parser<'a, Token, Ast>,
 ) -> AltParser<'a, Token, Ast> {

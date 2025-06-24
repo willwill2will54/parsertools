@@ -1,124 +1,23 @@
-use non_empty_collections::NonEmptyIndexSet;
+use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
 use std::sync::Arc;
-use thiserror::Error;
+
+use crate::{inner::{ParseFrontOutput, ParserInner}, results::{LeftRecursionCheck, ParseError, ParseOutput}};
+
+mod inner;
+pub mod results;
+
+pub mod tokens;
+pub mod combinators;
+pub mod transformers;
+pub mod helpers;
 
 pub trait TokenBounds: Eq + Hash + fmt::Debug + Clone + Sync + Send {}
-
 impl<T: Eq + Hash + fmt::Debug + Clone + Sync + Send> TokenBounds for T {}
 
-pub trait AstBounds: PartialEq + Hash + Clone + fmt::Debug {}
-
-impl<T: PartialEq + Hash + Clone + fmt::Debug> AstBounds for T {}
-
-#[derive(Error, Debug, Clone)]
-pub enum ParsingError<T: TokenBounds> {
-    #[error("Grammar permits multiple interpretations: {0:?}")]
-    AmbiguousGrammar(Vec<String>),
-    #[error("Unexpected token")]
-    UnexpectedTokenProperUnknown,
-    #[error("Unexpected token, expected: {expected:?}")]
-    UnexpectedTokenProperKnown { expected: T, found: T },
-    #[error("Unexpected end of input")]
-    UnexpectedEndOfInputProperUnknown,
-    #[error("Unexpected end of input, expected: {expected:?}")]
-    UnexpectedEndOfInputProperKnown { expected: T },
-    #[error("Unhandled tokens: {0:?}")]
-    UnhandledTokens(Vec<T>),
-}
-
-#[derive(Debug, Clone)]
-pub struct PartialParseResult<'a, Ast: AstBounds, Token: TokenBounds> {
-    pub ast: Ast,
-    remaining_tokens: &'a [Token],
-}
-
-impl<Ast: AstBounds, Token: TokenBounds> PartialEq for PartialParseResult<'_, Ast, Token> {
-    fn eq(&self, other: &Self) -> bool {
-        self.ast == other.ast && self.remaining_tokens == other.remaining_tokens
-    }
-}
-
-impl<Ast: AstBounds, Token: TokenBounds> Eq for PartialParseResult<'_, Ast, Token> {}
-
-impl<Ast: AstBounds, Token: TokenBounds> Hash for PartialParseResult<'_, Ast, Token> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.ast.hash(state);
-        self.remaining_tokens.hash(state);
-    }
-}
-
-pub type ParseOutput<'a, Ast, Token> =
-    Result<NonEmptyIndexSet<PartialParseResult<'a, Ast, Token>>, ParsingError<Token>>;
-
-pub type ParseAllOutput<'a, Ast, Token> = Result<Ast, ParsingError<Token>>;
-
-pub enum LeftRecursionCheck {
-    Ok,
-    NotOk(Vec<String>),
-}
-
-impl LeftRecursionCheck {
-    pub fn is_ok(&self) -> bool {
-        matches!(self, LeftRecursionCheck::Ok)
-    }
-
-    pub fn is_not_ok(&self) -> bool {
-        !self.is_ok()
-    }
-
-    pub fn not_ok_or_else<F: FnOnce() -> LeftRecursionCheck>(self, f: F) -> LeftRecursionCheck {
-        if self.is_not_ok() {
-            self
-        } else {
-            f()
-        }
-    }
-}
-
-trait ParserInner: Sync + Send {
-    type Token: TokenBounds;
-    type Ast: AstBounds;
-
-    fn parse<'a>(&self, tokens: &'a [Self::Token]) -> ParseOutput<'a, Self::Ast, Self::Token>;
-
-    fn parse_all<'a>(
-        &self,
-        tokens: &'a [Self::Token],
-    ) -> ParseAllOutput<'a, Self::Ast, Self::Token> {
-        self.default_parser_all(tokens)
-    }
-
-    fn default_parser_all<'a>(
-        &self,
-        tokens: &'a [Self::Token],
-    ) -> ParseAllOutput<'a, Self::Ast, Self::Token> {
-        let parsed = self.parse(tokens)?;
-        let filtered: Vec<_> = parsed
-            .iter()
-            .filter(|p| p.remaining_tokens.is_empty())
-            .map(|p| p.ast.clone())
-            .collect();
-        if filtered.is_empty() {
-            let remaining_tokens = parsed
-                .iter()
-                .min_by_key(|x| x.remaining_tokens.len())
-                .unwrap()
-                .remaining_tokens
-                .to_vec();
-            Err(ParsingError::UnhandledTokens(remaining_tokens))
-        } else if filtered.len() == 1 {
-            Ok(filtered.first().unwrap().clone())
-        } else {
-            Err(ParsingError::AmbiguousGrammar(
-                filtered.into_iter().map(|x| format!("{x:?}")).collect(),
-            ))
-        }
-    }
-
-    fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck;
-}
+pub trait AstBounds: PartialEq + Eq + Hash + Clone + fmt::Debug {}
+impl<T: PartialEq + Eq + Hash + Clone + fmt::Debug> AstBounds for T {}
 
 #[derive(Clone)]
 pub struct Parser<'a, T: TokenBounds, A: AstBounds> {
@@ -132,12 +31,18 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         }
     }
 
-    pub fn parse<'b>(&self, tokens: &'b [T]) -> ParseOutput<'b, A, T> {
-        self.inner.parse(tokens)
+    pub fn parse_front<'b>(&self, tokens: &'b [T]) -> ParseFrontOutput<'b, A, T> {
+        self.inner.parse_front(tokens)
     }
 
-    pub fn parse_all<'b>(&self, tokens: &'b [T]) -> ParseAllOutput<'b, A, T> {
-        self.inner.parse_all(tokens)
+    pub fn parse_unambiguous<'b>(&self, tokens: impl IntoIterator<Item = T>) -> ParseOutput<A, T> {
+        let tokens: Vec<T> = tokens.into_iter().collect();
+        self.inner.parse_unambiguous(tokens.as_slice())
+    }
+
+    pub fn parse<'b>(&self, tokens: impl IntoIterator<Item = T>) -> HashSet<A> {
+        let tokens: Vec<T> = tokens.into_iter().collect();
+        self.inner.parse(tokens.as_slice())
     }
 
     pub fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {
@@ -145,67 +50,39 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
     }
 
     pub fn or(self, p2: Self) -> Self {
-        Parser::new(alt_parser::alt(self, p2))
+        Parser::new(combinators::alt(self, p2))
     }
 
     pub fn then<Ast2: AstBounds + 'a>(self, p2: Parser<'a, T, Ast2>) -> Parser<'a, T, (A, Ast2)> {
-        Parser::new(seq_parser::seq(self, p2))
+        Parser::new(combinators::seq(self, p2))
     }
 
-    pub fn map<F: Fn(A) -> Ast + 'a + Sync + Send, Ast: AstBounds + 'a>(
-        self,
-        f: F,
-    ) -> Parser<'a, T, Ast> {
-        Parser::new(map_parser::map(self, f))
+    pub fn map<F: Fn(A) -> Ast + 'a + Sync + Send, Ast: AstBounds + 'a>
+        (self,f: F) -> Parser<'a, T, Ast> {
+        Parser::new(transformers::map(self, f))
     }
 
-    pub fn debug_msg(self, msg: impl ToString) -> Self
-    where
-        Self: Sized,
-    {
-        Parser::new(debug_parser::DebugParser {
+    pub fn filter<F: Fn(&A) -> bool + 'a + Sync + Send>
+        (self, f: F, e: ParseError<T>) -> Parser<'a, T, A> {
+        transformers::filter(self, f, e)
+    }
+
+    pub fn split_map<It: 'a + IntoIterator<Item=Ast>, F: Fn(A) -> It + 'a + Sync + Send, Ast: AstBounds + 'a>
+        (self,f: F) -> Parser<'a, T, Ast> {
+        Parser::new(transformers::split_map(self, f))
+    }
+
+    pub fn debug_msg(self, msg: impl ToString) -> Self where Self: Sized, {
+        Parser::new(helpers::DebugParser {
             inner: self,
             msg: Some(msg.to_string()),
         })
     }
 
-    pub fn debug(self) -> Self
-    where
-        Self: Sized,
-    {
-        Parser::new(debug_parser::DebugParser {
+    pub fn debug(self) -> Self where Self: Sized, {
+        Parser::new(helpers::DebugParser {
             inner: self,
             msg: None,
         })
     }
-}
-
-mod alt_parser;
-
-mod seq_parser;
-
-mod map_parser;
-
-mod single_token_parser;
-
-mod token_predicate_parser;
-
-mod lazy_parser;
-
-mod debug_parser;
-
-pub fn lazy<'a, T: TokenBounds + 'a, A: AstBounds + 'a>(
-    f: fn() -> Parser<'a, T, A>,
-) -> Parser<'a, T, A> {
-    Parser::new(lazy_parser::lazy(f))
-}
-
-pub fn tok<'a, T: TokenBounds + 'a>(token: T) -> Parser<'a, T, ()> {
-    Parser::new(single_token_parser::tok(token))
-}
-
-pub fn pred<'a, T: TokenBounds + 'a, A: AstBounds + 'a>(
-    predicate: impl Fn(&T) -> Option<A> + Sync + Send + 'a,
-) -> Parser<'a, T, A> {
-    Parser::new(token_predicate_parser::pred(predicate))
 }
