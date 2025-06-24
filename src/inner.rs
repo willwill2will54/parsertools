@@ -8,13 +8,13 @@ pub (super) trait ParserInner: Sync + Send {
     type Token: TokenBounds;
     type Ast: AstBounds;
 
-    fn parse_inner<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token>;
+    fn parse_front<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token>;
 
-    fn parse<'a>(
+    fn parse_unambiguous<'a>(
         &self,
         tokens: &'a [Self::Token],
     ) -> ParseOutput<Self::Ast, Self::Token> {
-        let parsed = self.parse_inner(tokens)?;
+        let parsed = self.parse_front(tokens)?;
         let filtered: Vec<_> = parsed
             .iter()
             .filter(|p| p.remaining_tokens.is_empty())
@@ -37,11 +37,11 @@ pub (super) trait ParserInner: Sync + Send {
         }
     }
 
-    fn parse_all<'a>(
+    fn parse<'a>(
         &self,
         tokens: &'a [Self::Token],
     ) -> HashSet<Self::Ast> {
-        let Ok(parsed) = self.parse_inner(tokens) else { return HashSet::new() };
+        let Ok(parsed) = self.parse_front(tokens) else { return HashSet::new() };
         parsed
             .iter()
             .filter(|p| p.remaining_tokens.is_empty())

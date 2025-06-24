@@ -10,14 +10,14 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
     type Token = Token;
     type Ast = Ast;
 
-    fn parse_inner<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         // p1 success and p2 success: return both
         // p1 success and p2 fail: return p1
         // p1 fail and p2 success: return p2
         // p1 fail and p2 fail: return p1
         let tokens_remaining = tokens.len();
-        match self.p1.parse_inner(tokens) {
-            Ok(mut p1_res) => match self.p2.parse_inner(tokens) {
+        match self.p1.parse_front(tokens) {
+            Ok(mut p1_res) => match self.p2.parse_front(tokens) {
                 Ok(p2_res) => {
                     p1_res.extend(p2_res);
                     let max_len = p1_res
@@ -30,7 +30,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
                 }
                 Err(_) => Ok(p1_res),
             },
-            Err(err) => self.p2.parse_inner(tokens).map_err(|_| err),
+            Err(err) => self.p2.parse_front(tokens).map_err(|_| err),
         }
     }
 

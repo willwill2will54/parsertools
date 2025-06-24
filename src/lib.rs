@@ -31,18 +31,18 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         }
     }
 
-    pub fn parse_inner<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
-        self.inner.parse_inner(tokens)
+    pub fn parse_front<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
+        self.inner.parse_front(tokens)
     }
 
-    pub fn parse<'b>(&self, tokens: impl IntoIterator<Item = T>) -> ParseOutput<A, T> {
+    pub fn parse_unambiguous<'b>(&self, tokens: impl IntoIterator<Item = T>) -> ParseOutput<A, T> {
+        let tokens: Vec<T> = tokens.into_iter().collect();
+        self.inner.parse_unambiguous(tokens.as_slice())
+    }
+
+    pub fn parse<'b>(&self, tokens: impl IntoIterator<Item = T>) -> HashSet<A> {
         let tokens: Vec<T> = tokens.into_iter().collect();
         self.inner.parse(tokens.as_slice())
-    }
-
-    pub fn parse_all<'b>(&self, tokens: impl IntoIterator<Item = T>) -> HashSet<A> {
-        let tokens: Vec<T> = tokens.into_iter().collect();
-        self.inner.parse_all(tokens.as_slice())
     }
 
     pub fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck {

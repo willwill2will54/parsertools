@@ -10,7 +10,7 @@ impl<T: TokenBounds> ParserInner for SingleTokenParser<T> {
     type Token = T;
     type Ast = T;
 
-    fn parse_inner<'a>(&self, tokens: &'a [T]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [T]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         match tokens.first() {
             Some(t) if t == &self.token => {
                 let new_tokens = &tokens[1..];

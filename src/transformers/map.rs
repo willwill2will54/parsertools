@@ -24,9 +24,9 @@ impl<
     type Token = Token;
     type Ast = OutAst;
 
-    fn parse_inner<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         Ok(
-            NonEmptyIndexSet::from_iterator(self.parser.parse_inner(tokens)?.into_iter().map(
+            NonEmptyIndexSet::from_iterator(self.parser.parse_front(tokens)?.into_iter().map(
                 |PartialParseResult {
                      ast,
                      remaining_tokens,

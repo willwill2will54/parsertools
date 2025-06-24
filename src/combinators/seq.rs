@@ -15,15 +15,15 @@ impl<Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> ParserInner
     type Token = Token;
     type Ast = (Ast1, Ast2);
 
-    fn parse_inner<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         // Parse the first part, then with each result, parse the second part
         // if the first part fails, return the error
         // if every result from the first part causes the second part to fail, return the first error
-        let p1_res = self.p1.parse_inner(tokens)?;
+        let p1_res = self.p1.parse_front(tokens)?;
         let mut error: Option<ParseError<Self::Token>> = None;
         let mut results = HashSet::new();
         for r1 in p1_res {
-            match self.p2.parse_inner(r1.remaining_tokens) {
+            match self.p2.parse_front(r1.remaining_tokens) {
                 Ok(p2_res) => {
                     results.extend(p2_res.into_iter().map(|r2| PartialParseResult {
                         ast: (r1.ast.clone(), r2.ast),

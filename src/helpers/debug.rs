@@ -15,7 +15,7 @@ where
     type Token = T;
     type Ast = A;
 
-    fn parse_inner<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
         let span = span!(
             Level::INFO,
             "parsing",
@@ -23,7 +23,7 @@ where
             label = self.msg.as_deref()
         );
         let _enter = span.enter();
-        let result = self.inner.parse_inner(tokens);
+        let result = self.inner.parse_front(tokens);
         match &result {
             Ok(results) => {
                 trace!("Parse results: {:?}", results);
