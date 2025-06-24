@@ -35,12 +35,12 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         self.inner.parse_inner(tokens)
     }
 
-    pub fn parse<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> ParseOutput<A, T> {
+    pub fn parse<'b>(&self, tokens: impl IntoIterator<Item = T>) -> ParseOutput<A, T> {
         let tokens: Vec<T> = tokens.into_iter().collect();
         self.inner.parse(tokens.as_slice())
     }
 
-    pub fn parse_all<'b,I: IntoIterator<Item = T>>(&self, tokens: I) -> HashSet<A> {
+    pub fn parse_all<'b>(&self, tokens: impl IntoIterator<Item = T>) -> HashSet<A> {
         let tokens: Vec<T> = tokens.into_iter().collect();
         self.inner.parse_all(tokens.as_slice())
     }

@@ -38,10 +38,10 @@ pub fn series_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds>(parser: Parser<'a
     parser.clone().or(concat_vecs(parser.clone(),lazy(move || series_vecs(parser.clone()))))
 }
 
-pub fn conjoin<'a, T: 'a + TokenBounds, A: 'a + AstBounds, I: IntoIterator<Item=Parser<'a, T,A>>> (parsers: I) -> Parser<'a, T,Vec<A>> {
+pub fn conjoin<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (parsers: impl IntoIterator<Item=Parser<'a, T,A>>) -> Parser<'a, T,Vec<A>> {
     conjoin_vecs(parsers.into_iter().map(|parser| vecify(parser)))
 }
-pub fn conjoin_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds, I: IntoIterator<Item=Parser<'a, T,Vec<A>>>> (parsers: I) -> Parser<'a, T,Vec<A>> {
+pub fn conjoin_vecs<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (parsers: impl IntoIterator<Item=Parser<'a, T,Vec<A>>>) -> Parser<'a, T,Vec<A>> {
     parsers.into_iter()
         .reduce(|acc,next| concat_vecs(acc, next))
         .unwrap_or(pred(|_| Some(vec![])))

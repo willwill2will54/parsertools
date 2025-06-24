@@ -10,7 +10,7 @@ pub use vecs::*;
 
 use crate::{tokens::pred, AstBounds, Parser, TokenBounds};
 
-pub fn disjunction<'a,T:'a + TokenBounds,A: 'a + AstBounds, I: IntoIterator<Item = Parser<'a,T,A>>>(parsers: I) -> Parser<'a,T,A> {
+pub fn disjunction<'a,T:'a + TokenBounds,A: 'a + AstBounds>(parsers: impl IntoIterator<Item = Parser<'a,T,A>>) -> Parser<'a,T,A> {
     parsers.into_iter()
         .reduce(|acc,next| acc.or(next))
         .unwrap_or(pred(|_| None))
