@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::parsers::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 type TokenPredicate<'a, T, A> = Box<dyn Fn(&T) -> Option<A> + Sync + Send + 'a>;
 

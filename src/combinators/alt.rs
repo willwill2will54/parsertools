@@ -1,4 +1,4 @@
-use crate::parsers::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
+use crate::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
 
 #[derive(Clone)]
 pub(crate) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {

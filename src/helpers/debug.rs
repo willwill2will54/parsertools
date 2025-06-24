@@ -1,6 +1,6 @@
 use tracing::{span, trace, Level};
 
-use crate::parsers::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
+use crate::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
 
 pub(crate) struct DebugParser<'a, T: TokenBounds, A: AstBounds> {
     pub(crate) inner: Parser<'a, T, A>,

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::parsers::{results::{LeftRecursionCheck, ParseError, ParseOutput, PartialParseResult}, AstBounds, TokenBounds};
+use crate::{results::{LeftRecursionCheck, ParseError, ParseOutput, PartialParseResult}, AstBounds, TokenBounds};
 
 pub (super) trait ParserInner: Sync + Send {
     type Token: TokenBounds;

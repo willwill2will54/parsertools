@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::parsers::{results::PartialParseResult, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
 
 pub(crate) struct SingleTokenParser<T: TokenBounds> {
     pub(crate) token: T,

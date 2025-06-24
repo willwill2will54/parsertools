@@ -1,5 +1,5 @@
 use thiserror::Error;
-use crate::parsers::{AstBounds, TokenBounds};
+use crate::{AstBounds, TokenBounds};
 use std::hash::Hash;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]

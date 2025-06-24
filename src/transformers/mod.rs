@@ -6,7 +6,7 @@ pub(crate) use filter::filter;
 pub(crate) use map::map;
 pub(crate) use split::split_map;
 
-use crate::parsers::{helpers::lazy, tokens::pred, AstBounds, Parser, TokenBounds};
+use crate::{helpers::lazy, tokens::pred, AstBounds, Parser, TokenBounds};
 
 pub fn alternating<'a, T: 'a + TokenBounds, A: 'a + AstBounds> (left: Parser<'a,T,A>, right: Parser<'a,T,A>) -> Parser<'a, T,Vec<A>> {
     alternating_vecs(vecify(left), vecify(right))
