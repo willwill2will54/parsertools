@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 use std::collections::HashSet;
 
@@ -15,7 +15,7 @@ impl<Token: TokenBounds, Ast1: AstBounds, Ast2: AstBounds> ParserInner
     type Token = Token;
     type Ast = (Ast1, Ast2);
 
-    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         // Parse the first part, then with each result, parse the second part
         // if the first part fails, return the error
         // if every result from the first part causes the second part to fail, return the first error

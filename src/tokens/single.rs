@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{results::PartialParseResult, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, LeftRecursionCheck, ParseError, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 pub(crate) struct SingleTokenParser<T: TokenBounds> {
     pub(crate) token: T,
@@ -10,7 +10,7 @@ impl<T: TokenBounds> ParserInner for SingleTokenParser<T> {
     type Token = T;
     type Ast = T;
 
-    fn parse_front<'a>(&self, tokens: &'a [T]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [T]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         match tokens.first() {
             Some(t) if t == &self.token => {
                 let new_tokens = &tokens[1..];

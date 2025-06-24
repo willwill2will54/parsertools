@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 #[derive(Clone)]
 pub(crate) struct SplitParser<
@@ -26,7 +26,7 @@ impl<
     type Token = Token;
     type Ast = OutAst;
 
-    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         Ok(NonEmptyIndexSet::from_iterator(
             self.parser.parse_front(tokens)?.into_iter()
                 .map(|PartialParseResult {

@@ -1,4 +1,4 @@
-use crate::{AstBounds, ParseInnerOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
+use crate::{AstBounds, ParseFrontOutput, ParserInner, TokenBounds,LeftRecursionCheck,Parser};
 
 #[derive(Clone)]
 pub(crate) struct AltParser<'a, Token: TokenBounds, Ast: AstBounds> {
@@ -10,7 +10,7 @@ impl<Token: TokenBounds, Ast: AstBounds> ParserInner for AltParser<'_, Token, As
     type Token = Token;
     type Ast = Ast;
 
-    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         // p1 success and p2 success: return both
         // p1 success and p2 fail: return p1
         // p1 fail and p2 success: return p2

@@ -3,7 +3,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::sync::Arc;
 
-use crate::{inner::{ParseInnerOutput, ParserInner}, results::{LeftRecursionCheck, ParseError, ParseOutput}};
+use crate::{inner::{ParseFrontOutput, ParserInner}, results::{LeftRecursionCheck, ParseError, ParseOutput}};
 
 mod inner;
 pub mod results;
@@ -31,7 +31,7 @@ impl<'a, T: TokenBounds + 'a, A: AstBounds + 'a> Parser<'a, T, A> {
         }
     }
 
-    pub fn parse_front<'b>(&self, tokens: &'b [T]) -> ParseInnerOutput<'b, A, T> {
+    pub fn parse_front<'b>(&self, tokens: &'b [T]) -> ParseFrontOutput<'b, A, T> {
         self.inner.parse_front(tokens)
     }
 

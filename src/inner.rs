@@ -8,7 +8,7 @@ pub (super) trait ParserInner: Sync + Send {
     type Token: TokenBounds;
     type Ast: AstBounds;
 
-    fn parse_front<'a>(&self, tokens: &'a [Self::Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token>;
+    fn parse_front<'a>(&self, tokens: &'a [Self::Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token>;
 
     fn parse_unambiguous<'a>(
         &self,
@@ -52,5 +52,5 @@ pub (super) trait ParserInner: Sync + Send {
     fn check_left_recursion(&self, depth: usize) -> LeftRecursionCheck;
 }
 
-pub type ParseInnerOutput<'a, Ast, Token> =
+pub type ParseFrontOutput<'a, Ast, Token> =
     Result<NonEmptyIndexSet<PartialParseResult<'a, Ast, Token>>, ParseError<Token>>;

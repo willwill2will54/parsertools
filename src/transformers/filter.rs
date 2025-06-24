@@ -1,6 +1,6 @@
 use non_empty_collections::NonEmptyIndexSet;
 
-use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseInnerOutput, Parser, ParserInner, TokenBounds};
+use crate::{results::PartialParseResult, AstBounds, LeftRecursionCheck, ParseError, ParseFrontOutput, Parser, ParserInner, TokenBounds};
 
 #[derive(Clone)]
 pub(crate) struct FilterParser<
@@ -23,7 +23,7 @@ impl<
     type Token = Token;
     type Ast = Ast;
 
-    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseInnerOutput<'a, Self::Ast, Self::Token> {
+    fn parse_front<'a>(&self, tokens: &'a [Token]) -> ParseFrontOutput<'a, Self::Ast, Self::Token> {
         match NonEmptyIndexSet::from_iterator(
             self.parser.parse_front(tokens)?.into_iter().filter(
                 |PartialParseResult {
